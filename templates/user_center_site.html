@@ -1,0 +1,164 @@
+{% load static %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>LG商城-用户中心</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    <script type="text/javascript" src="{% static 'js/vue-2.5.16.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/axios-0.18.0.min.js' %}"></script>
+</head>
+<body>
+<div id="app">
+    <div class="header_con">
+        <div class="header" v-cloak>
+            <div class="welcome fl">欢迎来到LG商城!</div>
+            <div class="fr">
+                <div v-if="username" class="login_btn fl">
+                    欢迎您：<em>[[ username ]]</em>
+                    <span>|</span>
+                    <a href="{% url 'users:logout' %}">退出</a>
+                </div>
+                <div v-else class="login_btn fl">
+                    <a href="{% url 'users:login' %}">登录</a>
+                    <span>|</span>
+                    <a href="{% url 'users:register' %}">注册</a>
+                </div>
+                <div class="user_link fl">
+                    <span>|</span>
+                    <a href="{% url 'users:info' %}">用户中心</a>
+                    <span>|</span>
+                    <a href="cart.html">我的购物车</a>
+                    <span>|</span>
+                    <a href="user_center_order.html">我的订单</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="search_bar clearfix">
+        <a href="{% url 'index' %}" class="logo fl"><img src="{% static 'images/logo.png' %}"></a>
+        <div class="search_wrap fl">
+            <form method="get" action="/search/" class="search_con">
+                <input type="text" class="input_text fl" name="q" placeholder="搜索商品">
+                <input type="submit" class="input_btn fr" name="" value="搜索">
+            </form>
+            <ul class="search_suggest fl">
+                <li><a href="#">索尼微单</a></li>
+                <li><a href="#">优惠15元</a></li>
+                <li><a href="#">美妆个护</a></li>
+                <li><a href="#">买2免1</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="main_con clearfix">
+        <div class="left_menu_con clearfix">
+            <h3>用户中心</h3>
+            <ul>
+                <li><a href="{% url 'users:info' %}">· 个人信息</a></li>
+                <li><a href="{% url 'users:address' %}" class="active">· 收货地址</a></li>
+                <li><a href="user_center_order.html">· 全部订单</a></li>
+                <li><a href="user_center_pass.html">· 修改密码</a></li>
+            </ul>
+        </div>
+        <div class="right_content clearfix" v-cloak>
+            <div class="site_top_con">
+                <a @click="show_add_site">新增收货地址</a>
+                <span>你已创建了<b>{{ count }}</b>个收货地址，最多可创建<b>20</b>个</span>
+            </div>
+            <div class="site_con" v-for="(address, index) in addresses">
+                <div class="site_title">
+                    <h3>[[ address.title ]]</h3>
+                    <a class="edit_icon" @click="show_edit_title(index)"></a>
+                    <em v-if="address.id===default_address_id">默认地址</em>
+                    <span class="del_site" @click="delete_address(index)">×</span>
+                </div>
+                <ul class="site_list">
+                    <li><span>收货人：</span><b>[[ address.receiver ]]</b></li>
+                    <li><span>所在地区：</span><b>[[ address.province ]] [[address.city]] [[ address.district ]]</b></li>
+                    <li><span>地址：</span><b>[[ address.place ]]</b></li>
+                    <li><span>手机：</span><b>[[ address.mobile ]]</b></li>
+                    <li><span>固定电话：</span><b>[[ address.tel ]]</b></li>
+                    <li><span>电子邮箱：</span><b>[[ address.email ]]</b></li>
+                </ul>
+                <div class="down_btn">
+                    <a v-if="address.id!=default_address_id" @click="set_default(index)">设为默认</a>
+                    <a class="edit_icon" @click="show_edit_site(index)">编辑</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <div class="foot_link">
+            <a href="#">关于我们</a>
+            <span>|</span>
+            <a href="#">联系我们</a>
+            <span>|</span>
+            <a href="#">招聘人才</a>
+            <span>|</span>
+            <a href="#">友情链接</a>
+        </div>
+        <p>CopyRight © 2016 长沙LG商业股份有限公司 All Rights Reserved</p>
+        <p>电话：010-****888 京ICP备*******8号</p>
+    </div>
+    <div class="pop_con" v-show="is_show_edit" v-cloak>
+        <div class="site_con site_pop">
+            <div class="site_pop_title">
+                <h3 v-if="editing_address_index">编辑收货地址</h3>
+                <h3 v-else>新增收货地址</h3>
+                <a @click="is_show_edit=false">×</a>
+            </div>
+            <form>
+                <div class="form_group">
+                    <label>*收货人：</label>
+                    <input v-model="form_address.receiver" @blur="check_receiver" type="text" class="receiver">
+                    <span v-show="error_receiver" class="receiver_error">请填写收件人</span>
+                </div>
+                <div class="form_group">
+                    <label>*所在地区：</label>
+                    <select v-model="form_address.province_id">
+                        <option :value="province.id" v-for="province in provinces">[[ province.name ]]</option>
+                    </select>
+                    <select v-model="form_address.city_id">
+                        <option :value="city.id" v-for="city in cities">[[ city.name ]]</option>
+                    </select>
+                    <select v-model="form_address.district_id">
+                        <option :value="district.id" v-for="district in districts">[[ district.name ]]</option>
+                    </select>
+                </div>
+                <div class="form_group">
+                    <label>*详细地址：</label>
+                    <input v-model="form_address.place" @blur="check_place" type="text" class="place">
+                    <span v-show="error_place" class="place_error">请填写地址信息</span>
+                </div>
+                <div class="form_group">
+                    <label>*手机：</label>
+                    <input v-model="form_address.mobile" @blur="check_mobile" type="text" class="mobile">
+                    <span v-show="error_mobile" class="mobile_error">手机信息有误</span>
+                </div>
+                <div class="form_group">
+                    <label>固定电话：</label>
+                    <input v-model="form_address.tel" @blur="check_tel" type="text" class="tel">
+                    <span v-show="error_tel" class="tel_error">固定电话有误</span>
+                </div>
+                <div class="form_group">
+                    <label>邮箱：</label>
+                    <input v-model="form_address.email" @blur="check_email" type="text" class="email">
+                    <span v-show="error_email" class="email_error">邮箱信息有误</span>
+                </div>
+                <input @click="save_address" name="" value="新 增" class="info_submit">
+                <input @click="is_show_edit=false" type="reset" name="" value="取 消" class="info_submit info_reset">
+            </form>
+        </div>
+        <div class="mask"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    let addresses = {{ addresses | safe }};
+    let default_address_id = {{ default_address_id }};
+</script>
+<script type="text/javascript" src="{% static 'js/common.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/user_center_site.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+{% load static %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>AC商城-用户中心</title>
+	<link rel="stylesheet" type="text/css" href="{% static 'css/reset.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    <script type="text/javascript" src="{% static 'js/vue-2.5.16.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/axios-0.18.0.min.js' %}"></script>
+</head>
+<body>
+	<div id="app">
+	<div class="header_con">
+		<div class="header" v-cloak>
+			<div class="welcome fl">欢迎来到AC商城!</div>
+			<div class="fr">
+                <div v-if="username" class="login_btn fl">
+                    欢迎您：<em>[[ username ]]</em>
+                    <span>|</span>
+                    <a href="{% url 'users:logout' %}">退出</a>
+                </div>
+                <div v-else class="login_btn fl">
+                    <a href="{% url 'users:login' %}">登录</a>
+                    <span>|</span>
+                    <a href="{% url 'users:register' %}">注册</a>
+                </div>
+				<div class="user_link fl">
+					<span>|</span>
+					<a href="{% url 'users:info' %}">用户中心</a>
+					<span>|</span>
+					<a href="cart.html">我的购物车</a>
+					<span>|</span>
+					<a href="user_center_order.html">我的订单</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="search_bar clearfix">
+		<a href="{% url 'index' %}" class="logo fl"><img src="{% static 'images/logo.png' %}"></a>
+		<div class="search_wrap fl">
+			<form method="get" action="/search/" class="search_con">
+                <input type="text" class="input_text fl" name="q" placeholder="搜索商品">
+                <input type="submit" class="input_btn fr" name="" value="搜索">
+            </form>
+			<ul class="search_suggest fl">
+				<li><a href="#">索尼微单</a></li>
+				<li><a href="#">优惠15元</a></li>
+				<li><a href="#">美妆个护</a></li>
+				<li><a href="#">买2免1</a></li>
+			</ul>
+		</div>		
+	</div>
+	<div class="main_con clearfix">
+		<div class="left_menu_con clearfix">
+			<h3>用户中心</h3>
+			<ul>
+				<li><a href="{% url 'users:info' %}">· 个人信息</a></li>
+				<li><a href="{% url 'users:address' %}">· 收货地址</a></li>
+                <li><a href="user_center_order.html">· 全部订单</a></li>
+                <li><a href="{% url 'users:changepwd' %}" class="active">· 修改密码</a></li>
+			</ul>
+		</div>
+		<div class="right_content clearfix" v-cloak>
+			<div class="info_con clearfix">
+				<h3 class="common_title2">修改密码</h3>
+				<div class="site_con pass_change_con">			
+                    <form class="change_pwd" method="post" @submit="on_submit" v-cloak>
+                        {% csrf_token %}
+                        <div class="form_group">
+                            <label>当前密码：</label>
+                            <input type="password" v-model="old_password" @blur="check_old_password" name="old_password">
+							<span v-show="error_old_password" class="old_pwd_error">密码最少8位，最长20位</span>
+                            {% if origin_password_errmsg %}
+                                <span class="old_pwd_error">{{ origin_password_errmsg }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="form_group">
+                            <label>新密码：</label>
+							<input type="password" v-model="new_password" @blur="check_new_password" name="new_password">
+							<span v-show="error_new_password" class="new_pwd_error">[[ error_new_password_message ]]</span>
+                        </div>
+                        <div class="form_group">
+                            <label>确认新密码：</label>
+                            <input type="password" v-model="new_password2" @blur="check_new_password2" name="new_password2">
+							<span v-show="error_new_password2" class="new_cpwd_error">两次输入的密码不一致</span>
+                            {% if change_password_errmsg %}
+                                <span class="new_cpwd_error">{{ change_password_errmsg }}</span>
+                            {% endif %}
+                        </div>
+                        <input type="submit" name="" value="确 定" class="info_submit">
+                        <input type="reset" name="" value="取 消" class="info_submit info_reset">
+                    </form>
+                </div>
+            </div>
+		</div>
+	</div>
+	<div class="footer">
+		<div class="foot_link">
+			<a href="#">关于我们</a>
+			<span>|</span>
+			<a href="#">联系我们</a>
+			<span>|</span>
+			<a href="#">招聘人才</a>
+			<span>|</span>
+			<a href="#">友情链接</a>		
+		</div>
+		<p>CopyRight © 2023 广东AC商业股份有限公司 All Rights Reserved</p>
+		<p>电话：010-****283    粤ICP备*******9号</p>
+	</div>
+	</div>
+    <script type="text/javascript" src="{% static 'js/common.js' %}"></script>
+	<script type="text/javascript" src="{% static 'js/user_center_pass.js' %}"></script>
+</body>
+</html>
